@@ -1,5 +1,5 @@
 "use client";
-import Sidebar from "@/components/dashboard/Sidebar";
+// import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -34,108 +34,81 @@ export default function CompanyDashboard() {
     fetchCompanyData();
   }, []);
 
+  // Example stats (replace with real API calls as needed)
+  const totalDestinations = destinations.length;
+  const totalBookings = bookings.length;
+  const totalRevenue = bookings.reduce((sum, b) => sum + (b.price || 0), 0);
+  const recentBookings = bookings.slice(0, 5);
+  const recentDestinations = destinations.slice(0, 5);
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Sidebar role="company" active="Dashboard" />
+  {/* <Sidebar role="company" active="Dashboard" /> */}
       <div className="flex-1 flex flex-col">
         <Topbar user={{ name: company?.name || "Company" }} />
-        <main className="p-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <Card className="p-6 shadow-xl rounded-2xl bg-white dark:bg-gray-900">
-              <h3 className="font-bold text-lg mb-4 text-emerald-700 dark:text-emerald-400">Add New Adventure Destination</h3>
-              <form
-                onSubmit={async e => {
-                  e.preventDefault();
-                  const token = localStorage.getItem("token");
-                  const formData = new FormData(e.target as HTMLFormElement);
-                  const payload = {
-                    name: formData.get("name"),
-                    description: formData.get("description"),
-                    image: formData.get("image"),
-                    date: formData.get("date"),
-                    time: formData.get("time"),
-                    availableSeats: Number(formData.get("availableSeats")),
-                    companyName: company?.name || "Company"
-                  };
-                  const res = await fetch("/api/destination/post", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                    body: JSON.stringify(payload),
-                  });
-                  const data = await res.json();
-                  if (res.ok) {
-                    alert("Destination posted successfully!");
-                  } else {
-                    alert(data.message || "Failed to post destination");
-                  }
-                }}
-                className="space-y-4"
-              >
-                <input name="name" type="text" placeholder="Destination Name" className="w-full p-2 rounded border" required />
-                <input name="description" type="text" placeholder="Description" className="w-full p-2 rounded border" required />
-                <input name="image" type="text" placeholder="Image URL" className="w-full p-2 rounded border" required />
-                <input name="date" type="date" className="w-full p-2 rounded border" required />
-                <input name="time" type="time" className="w-full p-2 rounded border" required />
-                <input name="availableSeats" type="number" min={1} placeholder="Available Seats" className="w-full p-2 rounded border" required />
-                <button type="submit" className="w-full bg-emerald-700 text-white py-2 rounded hover:bg-emerald-800">Post Destination</button>
-              </form>
-            </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Card className="p-6 shadow-xl rounded-2xl bg-white dark:bg-gray-900">
-              <div className="flex items-center gap-4 mb-4">
-                <img src="/placeholder-logo.png" alt="Company Logo" className="w-16 h-16 rounded-full shadow" />
-                <div>
-                  <h2 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{company?.name || "Company"}</h2>
-                  <p className="text-gray-500 dark:text-gray-300">Eco Adventure Company</p>
-                </div>
-              </div>
-              <div className="text-gray-700 dark:text-gray-200">Welcome! Manage your destinations and bookings here.</div>
-            </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <Card className="p-6 shadow-xl rounded-2xl bg-white dark:bg-gray-900">
-              <h3 className="font-bold text-lg mb-2 text-blue-700 dark:text-blue-400">Your Destinations</h3>
-              <div className="grid grid-cols-1 gap-4">
-                {destinations.length === 0 && <div className="text-gray-500">No destinations found.</div>}
-                {destinations.map((d, idx) => (
-                  <div key={idx} className="bg-blue-100 dark:bg-blue-900 p-4 rounded-xl">
-                    <strong>{d.name}</strong> ({d.date} {d.time})<br />
-                    {d.description}<br />
-                    Seats: {d.availableSeats}
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <Card className="p-6 shadow-xl rounded-2xl bg-white dark:bg-gray-900">
-              <h3 className="font-bold text-lg mb-2 text-emerald-700 dark:text-emerald-400">Bookings</h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-gray-500 dark:text-gray-300">
-                    <th className="py-2">Name</th>
-                    <th className="py-2">Email</th>
-                    <th className="py-2">Seats</th>
-                    <th className="py-2">Destination</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.length === 0 && (
-                    <tr><td colSpan={4} className="text-gray-500 py-4">No bookings found.</td></tr>
-                  )}
-                  {bookings.map((b, idx) => (
-                    <tr key={idx}>
-                      <td>{b.name}</td>
-                      <td>{b.email}</td>
-                      <td>{b.seats}</td>
-                      <td>{b.destinationName}</td>
-                    </tr>
+  <main className="p-8 pt-28">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Welcome, {company?.name || "Company"}</h1>
+              <div className="text-lg text-gray-700 dark:text-gray-200">Manage your business and adventures from here.</div>
+            </div>
+            <div className="flex gap-4 mt-4 md:mt-0">
+              <a href="/dashboard/company/profile" className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700">Profile</a>
+              <a href="/dashboard/company/destinations" className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Destinations</a>
+              <a href="/dashboard/company/bookings" className="bg-amber-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-600">Bookings</a>
+              <a href="/dashboard/company/analytics" className="bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-900">Analytics</a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 flex flex-col items-center">
+              <div className="text-2xl font-bold text-emerald-600 mb-2">{totalDestinations}</div>
+              <div className="text-gray-700 dark:text-gray-200">Destinations</div>
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 flex flex-col items-center">
+              <div className="text-2xl font-bold text-blue-600 mb-2">{totalBookings}</div>
+              <div className="text-gray-700 dark:text-gray-200">Bookings</div>
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 flex flex-col items-center">
+              <div className="text-2xl font-bold text-amber-500 mb-2">${totalRevenue}</div>
+              <div className="text-gray-700 dark:text-gray-200">Revenue</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6">
+              <h2 className="text-xl font-bold mb-4">Recent Bookings</h2>
+              {recentBookings.length === 0 ? (
+                <div className="text-gray-500">No recent bookings.</div>
+              ) : (
+                <ul className="space-y-3">
+                  {recentBookings.map((b, idx) => (
+                    <li key={idx} className="border-b pb-2">
+                      <div className="font-semibold">{b.name}</div>
+                      <div className="text-sm text-gray-600">{b.destinationName} &middot; {b.seats} seats</div>
+                      <div className="text-xs text-gray-400">{b.email}</div>
+                    </li>
                   ))}
-                </tbody>
-              </table>
-            </Card>
-          </motion.div>
+                </ul>
+              )}
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6">
+              <h2 className="text-xl font-bold mb-4">Recent Destinations</h2>
+              {recentDestinations.length === 0 ? (
+                <div className="text-gray-500">No recent destinations.</div>
+              ) : (
+                <ul className="space-y-3">
+                  {recentDestinations.map((d, idx) => (
+                    <li key={idx} className="border-b pb-2">
+                      <div className="font-semibold">{d.name}</div>
+                      <div className="text-sm text-gray-600">{d.date} {d.time}</div>
+                      <div className="text-xs text-gray-400">{d.companyName}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </main>
       </div>
     </div>

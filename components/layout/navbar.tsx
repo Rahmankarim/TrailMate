@@ -86,8 +86,11 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/destinations" className="text-gray-600 hover:text-gray-900 transition-all duration-300 hover:scale-105">Destinations</Link>
             <Link href="/features" className="text-gray-600 hover:text-gray-900 transition-all duration-300 hover:scale-105">Features</Link>
+               <Link href="/blog" className="text-gray-600 hover:text-gray-900 transition-all duration-300 hover:scale-105">Blogs</Link>
+                  <Link href="/community" className="text-gray-600 hover:text-gray-900 transition-all duration-300 hover:scale-105">Community</Link>
             <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-all duration-300 hover:scale-105">About</Link>
             <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-all duration-300 hover:scale-105">Contact</Link>
+
           </nav>
           <div className="flex items-center space-x-4">
             {!user ? (

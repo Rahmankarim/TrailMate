@@ -12,11 +12,27 @@ export const userSchema = Joi.object({
 export const destinationSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   description: Joi.string().min(10).max(500).required(),
+  detailedDescription: Joi.string().allow('').optional(),
   image: Joi.string().uri().required(),
+  images: Joi.array().items(Joi.string().uri()).optional(),
   companyName: Joi.string().min(2).max(100).required(),
   date: Joi.string().required(),
   time: Joi.string().required(),
   availableSeats: Joi.number().min(1).required(),
+  location: Joi.string().allow('').optional(),
+  difficulty: Joi.string().allow('').optional(),
+  duration: Joi.string().allow('').optional(),
+  elevation: Joi.string().allow('').optional(),
+  distance: Joi.string().allow('').optional(),
+  bestSeason: Joi.string().allow('').optional(),
+  activities: Joi.array().items(Joi.string()).optional(),
+  price: Joi.number().min(0).optional(),
+  featured: Joi.boolean().optional(),
+  highlights: Joi.array().items(Joi.string()).optional(),
+  itinerary: Joi.array().items(Joi.string()).optional(),
+  included: Joi.array().items(Joi.string()).optional(),
+  notIncluded: Joi.array().items(Joi.string()).optional(),
+  packingList: Joi.array().items(Joi.string()).optional(),
 });
 
 export const guideSchema = Joi.object({

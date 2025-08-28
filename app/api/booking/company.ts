@@ -8,7 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "GET") return res.status(405).end();
   const token = req.headers.authorization?.replace("Bearer ", "");
   const user = verifyJwt(token || "");
-  if (!user) return res.status(401).json({ error: "Unauthorized" });
+  if (!user || typeof user !== "object" || !('userId' in user)) return res.status(401).json({ error: "Unauthorized" });
+  const userId = (user as any).userId;
 
   const client = await clientPromise;
   const db = client.db();
@@ -16,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const bookings = db.collection<Booking>("bookings");
 
   // Find destinations posted by this company
-  const myDestinations = await destinations.find({ postedBy: user.userId }).toArray();
+  const myDestinations = await destinations.find({ postedBy: userId }).toArray();
   const myDestinationIds = myDestinations.map(d => d._id);
 
   // Find bookings for these destinations
