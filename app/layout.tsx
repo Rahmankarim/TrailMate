@@ -26,13 +26,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <style>{`
+  <style>{`
 html {
-  font-family: ${dmSans.style.fontFamily};
+  font-family: ${dmSans.style.fontFamily.replace(/['"]/g, "")};
   --font-sans: ${dmSans.variable};
   --font-serif: ${dmSans.variable};
 }
-        `}</style>
+  `}</style>
       </head>
   <body className="antialiased" suppressHydrationWarning>
         <Navbar />

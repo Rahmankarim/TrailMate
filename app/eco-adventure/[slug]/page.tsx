@@ -9,8 +9,8 @@ import { slugify } from '@/lib/utils';
 type Params = { params: { slug: string } };
 
 import React from "react";
-export default function Page({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = React.use(params);
+export default function Page({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const [dest, setDest] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [galleryOpen, setGalleryOpen] = useState(false);

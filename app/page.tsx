@@ -5,21 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import SearchBar from "@/components/SearchBar"
-import {
-  MapPin,
-  Users,
-  Shield,
-  Leaf,
-  Mountain,
-  Compass,
-  Star,
-  ArrowRight,
-  Globe,
-  Search,
-  Menu,
-  Volume2,
-  VolumeX,
-} from "lucide-react"
+import { MapPin, Users, Shield, Leaf, Mountain, Star, ArrowRight, Globe, Volume2, VolumeX } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -177,7 +163,10 @@ export default function TrailMatePage() {
   return (
     <div className="min-h-screen bg-white">
       <audio ref={audioRef} preload="auto">
-        <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/soft-calm-background-music-374964-Evti562G9CLXhGHos5SPieidnY9M0H.mp3" type="audio/mpeg" />
+        <source
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/soft-calm-background-music-374964-Evti562G9CLXhGHos5SPieidnY9M0H.mp3"
+          type="audio/mpeg"
+        />
       </audio>
 
       <Button
@@ -188,11 +177,10 @@ export default function TrailMatePage() {
         {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
       </Button>
 
-    
       <section className="pt-24 pb-16 px-6 animate-on-scroll">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up">
-           TrailMate – Smarter Routes, Greener Journeys
+            TrailMate – Smarter Routes, Greener Journeys
           </h1>
           <div className="mt-10 flex justify-center mb-12 md:mb-16">
             <SearchBar destinations={destinations} />
@@ -208,11 +196,9 @@ export default function TrailMatePage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           </div>
-  
-        
         </div>
       </section>
-  
+
       <section className="py-20 px-6 bg-gray-50 animate-on-scroll" id="features">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -249,11 +235,8 @@ export default function TrailMatePage() {
       </section>
 
       <section className="py-20 px-6 animate-on-scroll">
-        
         <div className="max-w-7xl mx-auto">
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            
             <div className="animate-fade-in-left">
               <h2 className="text-4xl font-bold text-gray-900 mb-6">Find Your Perfect Travel Companion</h2>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -274,10 +257,12 @@ export default function TrailMatePage() {
                   <span className="text-gray-700">Sustainable Travel Values</span>
                 </div>
               </div>
-              <Button className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 hover:scale-105 transition-all duration-300">
-                <Users className="mr-2 h-5 w-5" />
-                <Link href="/start-matching" className="text-white">Start Matching</Link>
-              </Button>
+              <Link href="/guides">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 hover:scale-105 transition-all duration-300">
+                  <Users className="mr-2 h-5 w-5" />
+                  Find Guides
+                </Button>
+              </Link>
             </div>
 
             <div className="relative animate-fade-in-right">
@@ -305,28 +290,31 @@ export default function TrailMatePage() {
           </div>
         </div>
       </section>
-<div className="max-w-6xl mx-auto space-y-8">
-        
-  <div className="relative h-80 md:h-96 rounded-2xl overflow-hidden animate-fade-in-up animation-delay-1000">
-            <img
-              src="/images/snow-peaks.jpg"
-              alt="Snow-capped peaks"
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-          </div>
-        
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="relative h-80 md:h-96 rounded-2xl overflow-hidden animate-fade-in-up animation-delay-1000">
+          <img
+            src="/images/snow-peaks.jpg"
+            alt="Snow-capped peaks"
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
         </div>
+      </div>
       <section className="py-20 px-6 bg-gray-50 animate-on-scroll">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">Popular Eco-Adventures</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Discover breathtaking destinations where sustainability meets adventure.</p>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Discover breathtaking destinations where sustainability meets adventure.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {destinations.map((destination, index) => {
-              const slug = destination.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+              const slug = destination.name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "")
               return (
                 <Link href={`/eco-adventure/${slug}`} key={index} className="group">
                   <Card className="bg-gray-50 border border-gray-200 hover:shadow-lg hover:-translate-y-2 transition-all duration-500 overflow-hidden group animate-fade-in-up">
@@ -344,7 +332,9 @@ export default function TrailMatePage() {
                         </Badge>
                       </div>
                       <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-white font-bold text-xl mb-1 group-hover:text-emerald-400 transition-colors">{destination.name}</h3>
+                        <h3 className="text-white font-bold text-xl mb-1 group-hover:text-emerald-400 transition-colors">
+                          {destination.name}
+                        </h3>
                         <p className="text-white/80 text-sm mb-3">{destination.description}</p>
                         <div className="flex items-center justify-between text-white/90 text-sm">
                           <span>{destination.travelers} travelers</span>
@@ -354,7 +344,7 @@ export default function TrailMatePage() {
                     </div>
                   </Card>
                 </Link>
-              );
+              )
             })}
           </div>
 
@@ -398,13 +388,14 @@ export default function TrailMatePage() {
               placeholder="Enter your email"
               className="bg-white border-gray-300 hover:scale-105 transition-transform duration-300"
             />
-            <Button className="bg-white text-gray-900 hover:bg-gray-100 px-8 hover:scale-105 transition-all duration-300">
-              Get Started
-            </Button>
+            <Link href="/destinations">
+              <Button className="bg-white text-gray-900 hover:bg-gray-100 px-8 hover:scale-105 transition-all duration-300">
+                Get Started
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
-
     </div>
   )
 }

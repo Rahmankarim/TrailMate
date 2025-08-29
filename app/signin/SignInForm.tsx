@@ -31,9 +31,8 @@ export default function SignInForm() {
       setLoading(false);
       return;
     }
-    // Save JWT to localStorage and redirect to dashboard
-    localStorage.setItem("token", data.token);
-    router.push("/dashboard");
+  // Redirect to dashboard; token is set in HttpOnly cookie by API
+  router.push("/dashboard");
   }
 
   async function handleGoogleSignIn() {
@@ -53,8 +52,8 @@ export default function SignInForm() {
       setLoading(false);
       return;
     }
-    localStorage.setItem("token", data.token);
-    router.push("/dashboard");
+  // Redirect to dashboard; token is set in HttpOnly cookie by API
+  router.push("/dashboard");
   }
 
   return (
