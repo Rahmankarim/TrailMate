@@ -40,6 +40,8 @@ export const destinationSchema = Joi.object({
   included: Joi.array().items(Joi.string()).optional(),
   notIncluded: Joi.array().items(Joi.string()).optional(),
   packingList: Joi.array().items(Joi.string()).optional(),
+    createdAt: Joi.date().optional(),
+    updatedAt: Joi.date().optional(),
 })
 
 export const guideSchema = Joi.object({
