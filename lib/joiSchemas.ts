@@ -45,8 +45,19 @@ export const destinationSchema = Joi.object({
 })
 
 export const guideSchema = Joi.object({
-  places: Joi.array().items(Joi.string().min(2).max(100)).required(),
-  availableDates: Joi.array().items(Joi.string()).required(),
+  name: Joi.string().min(2).max(100).required(),
+  bio: Joi.string().min(10).max(1000).required(),
+  experience: Joi.number().min(0).max(100).required(),
+  specialties: Joi.array().items(Joi.string().min(2).max(50)).required(),
+  languages: Joi.array().items(Joi.string().min(2).max(50)).required(),
+  location: Joi.string().min(2).max(100).required(),
+  dailyRate: Joi.number().min(0).required(),
+  contactInfo: Joi.object({
+    phone: Joi.string().min(7).max(20).required(),
+    email: Joi.string().email().required(),
+  }).required(),
+  places: Joi.array().items(Joi.string().min(2).max(100)).optional(),
+  availableDates: Joi.array().items(Joi.string()).optional(),
 })
 
 export const bookingSchema = Joi.object({
