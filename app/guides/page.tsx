@@ -233,7 +233,6 @@ export default function GuidesPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
-      {/* Hero Section */}
       <section className="relative w-full h-[70vh] flex flex-col justify-center items-center overflow-hidden">
         <img
           src="/images/attabad.jpg"
