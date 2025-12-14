@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { MongoClient, ObjectId } from "mongodb"
-
-const uri = process.env.MONGODB_URI || ""
+import { ObjectId } from "mongodb"
+import clientPromise from "@/lib/mongodb"
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +10,9 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get("difficulty")
     const maxPrice = searchParams.get("maxPrice")
 
-    const client = new MongoClient(uri)
-    await client.connect()
-    const db = client.db("trailmate")
+    const client = await clientPromise
+    const dbName = process.env.MONGODB_URI?.split('/')[3]?.split('?')[0] || "TrailMate"
+    const db = client.db(dbName)
 
     const filter: any = { isActive: true }
 
@@ -70,8 +69,6 @@ export async function GET(request: NextRequest) {
       ])
       .toArray()
 
-    await client.close()
-
     return NextResponse.json({ hikes })
   } catch (error) {
     console.error("Error fetching hikes:", error)
@@ -106,9 +103,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const client = new MongoClient(uri)
-    await client.connect()
-    const db = client.db("trailmate")
+    const client = await clientPromise
+    const dbName = process.env.MONGODB_URI?.split('/')[3]?.split('?')[0] || "TrailMate"
+    const db = client.db(dbName)
 
     const hike = {
       guideId: new ObjectId(guideId),
@@ -142,8 +139,6 @@ export async function POST(request: NextRequest) {
         $set: { lastActive: new Date() },
       },
     )
-
-    await client.close()
 
     return NextResponse.json({
       message: "Hike created successfully",

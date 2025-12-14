@@ -178,7 +178,7 @@ export default function AdminGuidesPage() {
     const matchesSearch =
       guide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       guide.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guide.specialties.some((s) => s.toLowerCase().includes(searchTerm.toLowerCase()))
+      (guide.specialties && guide.specialties.some((s) => s.toLowerCase().includes(searchTerm.toLowerCase())))
 
     const matchesFilter =
       filterStatus === "all" ||
@@ -277,7 +277,9 @@ export default function AdminGuidesPage() {
                     id="profileImage"
                     value={formData.profileImage}
                     onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
+                    placeholder="https://example.com/image.jpg or leave blank for default"
                   />
+                  <p className="text-xs text-gray-500">Paste an image URL or upload to an image hosting service like Imgur</p>
                 </div>
 
                 <div className="space-y-2">

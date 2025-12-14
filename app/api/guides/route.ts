@@ -1,6 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 import { guideSchema } from "@/lib/joiSchemas";
 import { verifyJwt } from "@/lib/jwt";
+import { ObjectId } from "mongodb";
 
 export async function POST(req: Request) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -27,9 +28,25 @@ export async function POST(req: Request) {
   const db = client.db();
   const guides = db.collection("guides");
 
+  // Convert userId to ObjectId for proper storage
+  const postedById = typeof user.userId === 'string' ? new ObjectId(user.userId) : user.userId;
+
   const guide = {
-    userId: user.userId,
-    ...value,
+    postedBy: postedById,
+    name: value.name,
+    bio: value.bio,
+    profileImage: value.profileImage || "/placeholder-user.jpg",
+    experience: value.experience,
+    specialties: value.specialties || [],
+    languages: value.languages,
+    location: value.location,
+    dailyRate: value.dailyRate,
+    totalHikes: 0,
+    totalClients: 0,
+    rating: 0,
+    reviewCount: 0,
+    isActive: true,
+    isVerified: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

@@ -110,16 +110,27 @@ export default function CompanyGuides() {
   languages: "",
   location: "",
   dailyRate: "",
-  contactPhone: "",
-  contactEmail: "",
-  image: "",
+  profileImage: "",
   })
 
-  const [hikeForm, setHikeForm] = useState({
+  const [hikeForm, setHikeForm] = useState<{
+    name: string
+    description: string
+    location: string
+    difficulty: "Easy" | "Moderate" | "Challenging" | "Expert"
+    duration: string
+    distance: string
+    elevation: string
+    maxGroupSize: string
+    price: string
+    bestSeason: string
+    includedServices: string
+    requirements: string
+  }>({
     name: "",
     description: "",
     location: "",
-    difficulty: "Easy" as const,
+    difficulty: "Easy",
     duration: "",
     distance: "",
     elevation: "",
@@ -172,14 +183,12 @@ export default function CompanyGuides() {
         body: JSON.stringify({
           name: guideForm.name,
           bio: guideForm.bio,
-          experience: guideForm.experience,
-          languages: guideForm.languages,
+          experience: Number.parseInt(guideForm.experience),
+          specialties: guideForm.specialties.split(",").map(s => s.trim()),
+          languages: guideForm.languages.split(",").map(l => l.trim()),
           location: guideForm.location,
-          phone: guideForm.contactPhone,
-          email: guideForm.contactEmail,
-          places: ["Kathmandu", "Pokhara"],
-          availableDates: ["2025-09-01", "2025-09-15"],
-          image: guideForm.image,
+          dailyRate: Number.parseFloat(guideForm.dailyRate),
+          profileImage: guideForm.profileImage || "/placeholder-user.jpg",
         }),
       });
 
@@ -194,32 +203,16 @@ export default function CompanyGuides() {
           languages: "",
           location: "",
           dailyRate: "",
-          contactPhone: "",
-          contactEmail: "",
-          image: "",
-        })
-        setShowAddHikeDialog(false)
-        setHikeForm({
-          name: "",
-          description: "",
-          location: "",
-          difficulty: "Easy",
-          duration: "",
-          distance: "",
-          elevation: "",
-          maxGroupSize: "",
-          price: "",
-          bestSeason: "",
-          includedServices: "",
-          requirements: "",
+          profileImage: "",
         })
         fetchData()
       } else {
-        alert("Failed to add hike")
+        const errorData = await response.json()
+        alert(errorData.error || "Failed to add guide")
       }
     } catch (error) {
-      console.error("Error adding hike:", error)
-      alert("Failed to add hike")
+      console.error("Error adding guide:", error)
+      alert("Failed to add guide")
     }
   }
 
@@ -239,6 +232,56 @@ export default function CompanyGuides() {
     } catch (error) {
       console.error("Error deleting guide:", error)
       alert("Failed to delete guide")
+    }
+  }
+
+  function handleViewGuide(id: string) {
+    window.location.href = `/guides/${id}`
+  }
+
+  function handleEditGuide(id: string) {
+    // Navigate to edit page or open edit dialog
+    const guide = guides.find(g => g._id === id)
+    if (guide) {
+      setGuideForm({
+        name: guide.name,
+        bio: guide.bio,
+        experience: guide.experience.toString(),
+        specialties: guide.specialties?.join(", ") || "",
+        languages: guide.languages?.join(", ") || "",
+        location: guide.location,
+        dailyRate: guide.dailyRate.toString(),
+        profileImage: guide.profileImage || "",
+      })
+      setSelectedGuide(id)
+      setShowAddGuideDialog(true)
+    }
+  }
+
+  function handleViewHike(id: string) {
+    // Navigate to hike detail page
+    window.location.href = `/guides/hikes/${id}`
+  }
+
+  function handleEditHike(id: string) {
+    const hike = hikes.find(h => h._id === id)
+    if (hike) {
+      setHikeForm({
+        name: hike.name,
+        description: hike.description,
+        location: hike.location,
+        difficulty: hike.difficulty,
+        duration: hike.duration,
+        distance: hike.distance.toString(),
+        elevation: hike.elevation.toString(),
+        maxGroupSize: hike.maxGroupSize.toString(),
+        price: hike.price.toString(),
+        bestSeason: hike.bestSeason,
+        includedServices: "",
+        requirements: "",
+      })
+      setSelectedGuide(id)
+      setShowAddHikeDialog(true)
     }
   }
 
@@ -396,26 +439,15 @@ export default function CompanyGuides() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="contactPhone">Contact Phone</Label>
-                        <Input
-                          id="contactPhone"
-                          value={guideForm.contactPhone}
-                          onChange={(e) => setGuideForm({ ...guideForm, contactPhone: e.target.value })}
-                          placeholder="+977-9841234567"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="contactEmail">Contact Email</Label>
-                        <Input
-                          id="contactEmail"
-                          type="email"
-                          value={guideForm.contactEmail}
-                          onChange={(e) => setGuideForm({ ...guideForm, contactEmail: e.target.value })}
-                          placeholder="guide@example.com"
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="profileImage">Profile Image URL</Label>
+                      <Input
+                        id="profileImage"
+                        value={guideForm.profileImage}
+                        onChange={(e) => setGuideForm({ ...guideForm, profileImage: e.target.value })}
+                        placeholder="https://example.com/image.jpg or leave blank for default"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Paste an image URL or upload to an image hosting service</p>
                     </div>
                     <Button type="submit" className="w-full">
                       Add Guide
@@ -489,12 +521,12 @@ export default function CompanyGuides() {
                       </div>
 
                       <div className="flex flex-wrap gap-1 mb-4">
-                        {guide.specialties.slice(0, 2).map((specialty, index) => (
+                        {guide.specialties && guide.specialties.slice(0, 2).map((specialty, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {specialty}
                           </Badge>
                         ))}
-                        {guide.specialties.length > 2 && (
+                        {guide.specialties && guide.specialties.length > 2 && (
                           <Badge variant="secondary" className="text-xs">
                             +{guide.specialties.length - 2} more
                           </Badge>
@@ -504,11 +536,21 @@ export default function CompanyGuides() {
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-gray-900">${guide.dailyRate}/day</span>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="gap-1 bg-transparent">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="gap-1 bg-transparent"
+                            onClick={() => handleViewGuide(guide._id)}
+                          >
                             <Eye className="w-3 h-3" />
                             View
                           </Button>
-                          <Button size="sm" variant="outline" className="gap-1 bg-transparent">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="gap-1 bg-transparent"
+                            onClick={() => handleEditGuide(guide._id)}
+                          >
                             <Edit className="w-3 h-3" />
                             Edit
                           </Button>
@@ -784,11 +826,21 @@ export default function CompanyGuides() {
                           Added {new Date(hike.createdAt).toLocaleDateString()}
                         </span>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="gap-1 bg-transparent">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="gap-1 bg-transparent"
+                            onClick={() => handleViewHike(hike._id)}
+                          >
                             <Eye className="w-3 h-3" />
                             View
                           </Button>
-                          <Button size="sm" variant="outline" className="gap-1 bg-transparent">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="gap-1 bg-transparent"
+                            onClick={() => handleEditHike(hike._id)}
+                          >
                             <Edit className="w-3 h-3" />
                             Edit
                           </Button>

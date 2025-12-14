@@ -32,7 +32,7 @@ export default function Topbar({ user = { name: "Alex" }, onToggleTheme }: { use
               onClick={() => setShowDropdown((v) => !v)}
             >
               <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-              <span className="font-semibold text-gray-700 dark:text-gray-200">{user.name}</span>
+              <span className="font-semibold text-gray-700 dark:text-gray-200">{user?.name || "User"}</span>
             </button>
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-lg shadow-lg border z-10">
