@@ -21,16 +21,16 @@ import {
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([])
-  const [companies, setCompanies] = useState<any[]>([])
   const [destinations, setDestinations] = useState<any[]>([])
   const [bookings, setBookings] = useState<any[]>([])
-  const [chats, setChats] = useState<any[]>([])
+  const [guides, setGuides] = useState<any[]>([])
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCompanies: 0,
+    totalGuides: 0,
+    totalDestinations: 0,
     totalBookings: 0,
     totalRevenue: 0,
-    activeChats: 0,
   })
   const [loading, setLoading] = useState(true)
 
@@ -39,87 +39,50 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token")
 
       try {
-        // For demo purposes, using mock data - replace with actual API calls
-        setUsers([
-          {
-            id: 1,
-            name: "John Doe",
-            email: "john@example.com",
-            role: "user",
-            joinDate: "2024-01-15",
-            status: "active",
-          },
-          {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane@example.com",
-            role: "user",
-            joinDate: "2024-02-20",
-            status: "active",
-          },
-          {
-            id: 3,
-            name: "EcoTours Ltd",
-            email: "info@ecotours.com",
-            role: "company",
-            joinDate: "2024-01-10",
-            status: "active",
-          },
-        ])
-
-        setCompanies([
-          { id: 1, name: "EcoTours Ltd", email: "info@ecotours.com", destinations: 5, bookings: 23, revenue: 15000 },
-          { id: 2, name: "Adventure Co", email: "hello@adventure.com", destinations: 3, bookings: 12, revenue: 8500 },
-        ])
-
-        setDestinations([
-          { id: 1, name: "Hunza Valley Trek", company: "EcoTours Ltd", price: 299, bookings: 15, status: "active" },
-          { id: 2, name: "Skardu Lakes Tour", company: "Adventure Co", price: 199, bookings: 8, status: "active" },
-        ])
-
-        setBookings([
-          {
-            id: 1,
-            user: "John Doe",
-            destination: "Hunza Valley Trek",
-            date: "2024-03-15",
-            status: "confirmed",
-            amount: 299,
-          },
-          {
-            id: 2,
-            user: "Jane Smith",
-            destination: "Skardu Lakes Tour",
-            date: "2024-03-20",
-            status: "pending",
-            amount: 199,
-          },
-        ])
-
-        setChats([
-          {
-            id: 1,
-            user: "John Doe",
-            company: "EcoTours Ltd",
-            lastMessage: "When does the trek start?",
-            status: "active",
-          },
-          {
-            id: 2,
-            user: "Jane Smith",
-            company: "Adventure Co",
-            lastMessage: "Can I modify my booking?",
-            status: "pending",
-          },
-        ])
-
-        setStats({
-          totalUsers: 156,
-          totalCompanies: 23,
-          totalBookings: 89,
-          totalRevenue: 45600,
-          activeChats: 12,
+        // Fetch real stats from API
+        const statsRes = await fetch("/api/admin/stats", {
+          headers: { Authorization: `Bearer ${token}` },
         })
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          setStats(statsData)
+        }
+
+        // Fetch real users
+        const usersRes = await fetch("/api/admin/users", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (usersRes.ok) {
+          const usersData = await usersRes.json()
+          setUsers(usersData.users || [])
+        }
+
+        // Fetch real destinations
+        const destsRes = await fetch("/api/admin/destinations", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (destsRes.ok) {
+          const destsData = await destsRes.json()
+          setDestinations(destsData.destinations || [])
+        }
+
+        // Fetch real bookings
+        const bookingsRes = await fetch("/api/admin/bookings", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (bookingsRes.ok) {
+          const bookingsData = await bookingsRes.json()
+          setBookings(bookingsData.bookings || [])
+        }
+
+        // Fetch guides
+        const guidesRes = await fetch("/api/guides", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (guidesRes.ok) {
+          const guidesData = await guidesRes.json()
+          setGuides(guidesData.guides || [])
+        }
       } catch (error) {
         console.error("Error fetching admin data:", error)
       }
@@ -128,12 +91,45 @@ export default function AdminDashboard() {
     fetchAdminData()
   }, [])
 
-  const handleDeleteUser = (userId: number) => {
-    setUsers(users.filter((u) => u.id !== userId))
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to delete this user?")) return
+    
+    const token = localStorage.getItem("token")
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        setUsers(users.filter((u) => u._id !== userId))
+      } else {
+        const errorData = await res.json()
+        alert(errorData.error || "Failed to delete user")
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      alert("Error deleting user")
+    }
   }
 
-  const handleDeleteBooking = (bookingId: number) => {
-    setBookings(bookings.filter((b) => b.id !== bookingId))
+  const handleDeleteDestination = async (destId: string) => {
+    if (!confirm("Are you sure you want to delete this destination?")) return
+    
+    const token = localStorage.getItem("token")
+    try {
+      const res = await fetch(`/api/admin/destinations?id=${destId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        setDestinations(destinations.filter((d) => d._id !== destId))
+      } else {
+        alert("Failed to delete destination")
+      }
+    } catch (error) {
+      console.error("Error deleting destination:", error)
+      alert("Error deleting destination")
+    }
   }
 
   if (loading) {
@@ -147,7 +143,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <Shield className="h-8 w-8 text-red-400" />
             <div>
@@ -160,6 +156,13 @@ export default function AdminDashboard() {
               <AlertTriangle className="h-3 w-3 mr-1" />
               Admin Access
             </Badge>
+            <Button
+              onClick={() => window.location.href = "/"}
+              variant="outline"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              Go to Home
+            </Button>
             <Button
               onClick={() => {
                 localStorage.removeItem("token")
@@ -174,7 +177,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="p-6">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Card className="bg-slate-800 border-slate-700">
@@ -235,16 +238,55 @@ export default function AdminDashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9 }}>
             <Card className="bg-slate-800 border-slate-700">
               <CardContent className="p-6 flex items-center">
-                <div className="w-12 h-12 bg-red-900/20 rounded-full flex items-center justify-center mr-4">
-                  <MessageCircle className="h-6 w-6 text-red-400" />
+                <div className="w-12 h-12 bg-cyan-900/20 rounded-full flex items-center justify-center mr-4">
+                  <MapPin className="h-6 w-6 text-cyan-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-red-400">{stats.activeChats}</p>
-                  <p className="text-slate-400">Active Chats</p>
+                  <p className="text-2xl font-bold text-cyan-400">{stats.totalGuides || 0}</p>
+                  <p className="text-slate-400">Total Guides</p>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <Button
+            onClick={() => window.location.href = "/admin/users"}
+            className="bg-blue-600 hover:bg-blue-700 text-white h-auto py-4 flex flex-col gap-2"
+          >
+            <Users className="h-6 w-6" />
+            Manage Users
+          </Button>
+          <Button
+            onClick={() => window.location.href = "/admin/destinations"}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white h-auto py-4 flex flex-col gap-2"
+          >
+            <MapPin className="h-6 w-6" />
+            Manage Destinations
+          </Button>
+          <Button
+            onClick={() => window.location.href = "/admin/hikes"}
+            className="bg-purple-600 hover:bg-purple-700 text-white h-auto py-4 flex flex-col gap-2"
+          >
+            <Activity className="h-6 w-6" />
+            Manage Hikes
+          </Button>
+          <Button
+            onClick={() => window.location.href = "/admin/guides"}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white h-auto py-4 flex flex-col gap-2"
+          >
+            <Building className="h-6 w-6" />
+            Manage Guides
+          </Button>
+          <Button
+            onClick={() => window.location.href = "/admin/blogs"}
+            className="bg-orange-600 hover:bg-orange-700 text-white h-auto py-4 flex flex-col gap-2"
+          >
+            <MessageCircle className="h-6 w-6" />
+            Manage Blogs
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -253,177 +295,136 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-100">
                 <Users className="h-5 w-5 text-blue-400" />
-                User Management
+                User Management ({users.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {users.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="font-semibold text-slate-100">{user.name}</p>
-                      <p className="text-sm text-slate-400">{user.email}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="text-xs bg-slate-600 text-slate-300">
-                          {user.role}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs bg-emerald-900/20 text-emerald-400">
-                          {user.status}
-                        </Badge>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {users.length === 0 ? (
+                  <p className="text-slate-400 text-center py-4">No users found</p>
+                ) : (
+                  users.map((user) => (
+                    <div key={user._id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-100">{user.name}</p>
+                        <p className="text-sm text-slate-400">{user.email}</p>
+                        <div className="flex gap-2 mt-1">
+                          <Badge className="text-xs bg-blue-900/30 text-blue-300">{user.role}</Badge>
+                          {user.companyName && <Badge className="text-xs bg-emerald-900/30 text-emerald-300">{user.companyName}</Badge>}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="border-slate-600 text-slate-300 hover:bg-slate-600 bg-transparent"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-red-600 text-red-400 hover:bg-red-900/20 bg-transparent"
-                        onClick={() => handleDeleteUser(user.id)}
+                        variant="destructive"
+                        onClick={() => handleDeleteUser(user._id)}
+                        className="ml-2"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Booking Management */}
+          {/* Destinations Management */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-slate-100">
+                <MapPin className="h-5 w-5 text-emerald-400" />
+                Destinations ({destinations.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {destinations.length === 0 ? (
+                  <p className="text-slate-400 text-center py-4">No destinations found</p>
+                ) : (
+                  destinations.map((dest) => (
+                    <div key={dest._id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-100">{dest.name}</p>
+                        <p className="text-sm text-slate-400">{dest.companyName}</p>
+                        <div className="flex gap-2 mt-1">
+                          {dest.price && <Badge className="text-xs bg-emerald-900/30 text-emerald-300">${dest.price}</Badge>}
+                          {dest.location && <Badge className="text-xs bg-blue-900/30 text-blue-300">{dest.location}</Badge>}
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteDestination(dest._id)}
+                        className="ml-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bookings */}
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-100">
                 <Calendar className="h-5 w-5 text-purple-400" />
-                Booking Management
+                Recent Bookings ({bookings.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {bookings.map((booking) => (
-                  <div key={booking.id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="font-semibold text-slate-100">{booking.destination}</p>
-                      <p className="text-sm text-slate-400">
-                        {booking.user} • {booking.date}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge
-                          variant="secondary"
-                          className={`text-xs ${
-                            booking.status === "confirmed"
-                              ? "bg-emerald-900/20 text-emerald-400"
-                              : "bg-amber-900/20 text-amber-400"
-                          }`}
-                        >
-                          {booking.status}
-                        </Badge>
-                        <span className="text-xs text-slate-400">${booking.amount}</span>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {bookings.length === 0 ? (
+                  <p className="text-slate-400 text-center py-4">No bookings found</p>
+                ) : (
+                  bookings.map((booking) => (
+                    <div key={booking._id} className="p-3 bg-slate-700 rounded-lg">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-100">{booking.name}</p>
+                          <p className="text-sm text-slate-400">{booking.email}</p>
+                          <div className="flex gap-2 mt-1">
+                            <Badge className="text-xs bg-purple-900/30 text-purple-300">{booking.seats} seats</Badge>
+                            {booking.status && <Badge className="text-xs bg-amber-900/30 text-amber-300">{booking.status}</Badge>}
+                          </div>
+                        </div>
+                        {booking.amount > 0 && (
+                          <p className="text-emerald-400 font-bold">${booking.amount}</p>
+                        )}
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-slate-600 text-slate-300 hover:bg-slate-600 bg-transparent"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-red-600 text-red-400 hover:bg-red-900/20 bg-transparent"
-                        onClick={() => handleDeleteBooking(booking.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Chat Monitoring */}
+          {/* Guides */}
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-100">
-                <MessageCircle className="h-5 w-5 text-red-400" />
-                Chat Monitoring
+                <Shield className="h-5 w-5 text-cyan-400" />
+                Guides ({guides.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {chats.map((chat) => (
-                  <div key={chat.id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
-                    <div>
-                      <p className="font-semibold text-slate-100">
-                        {chat.user} ↔ {chat.company}
-                      </p>
-                      <p className="text-sm text-slate-400 truncate max-w-48">{chat.lastMessage}</p>
-                      <Badge
-                        variant="secondary"
-                        className={`text-xs mt-1 ${
-                          chat.status === "active"
-                            ? "bg-emerald-900/20 text-emerald-400"
-                            : "bg-amber-900/20 text-amber-400"
-                        }`}
-                      >
-                        {chat.status}
-                      </Badge>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {guides.length === 0 ? (
+                  <p className="text-slate-400 text-center py-4">No guides found</p>
+                ) : (
+                  guides.map((guide: any) => (
+                    <div key={guide._id} className="p-3 bg-slate-700 rounded-lg">
+                      <p className="font-semibold text-slate-100">{guide.name}</p>
+                      <p className="text-sm text-slate-400">{guide.email}</p>
+                      <div className="flex gap-2 mt-1">
+                        {guide.location && <Badge className="text-xs bg-cyan-900/30 text-cyan-300">{guide.location}</Badge>}
+                        {guide.experience && <Badge className="text-xs bg-blue-900/30 text-blue-300">{guide.experience}</Badge>}
+                      </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-slate-600 text-slate-300 hover:bg-slate-600 bg-transparent"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Site Analytics */}
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-100">
-                <Activity className="h-5 w-5 text-amber-400" />
-                Site Analytics & Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-slate-700 rounded-lg text-center">
-                    <p className="text-lg font-bold text-slate-100">1,247</p>
-                    <p className="text-xs text-slate-400">Daily Visitors</p>
-                  </div>
-                  <div className="p-3 bg-slate-700 rounded-lg text-center">
-                    <p className="text-lg font-bold text-slate-100">89%</p>
-                    <p className="text-xs text-slate-400">Uptime</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Button className="w-full bg-slate-700 hover:bg-slate-600 text-slate-300">
-                    <Settings className="h-4 w-4 mr-2" />
-                    System Settings
-                  </Button>
-                  <Button className="w-full bg-slate-700 hover:bg-slate-600 text-slate-300">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    View Full Analytics
-                  </Button>
-                  <Button className="w-full bg-slate-700 hover:bg-slate-600 text-slate-300">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Manage Content
-                  </Button>
-                </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

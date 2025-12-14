@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const result = await users.insertOne(user)
 
     const { signJwt } = require("@/lib/jwt")
-    const token = signJwt({ userId: result.insertedId, role: user.role })
+    const token = await signJwt({ userId: result.insertedId, role: user.role })
 
     const response = new Response(
       JSON.stringify({

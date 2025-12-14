@@ -59,7 +59,7 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 pt-20">
       <div className="flex-1 flex flex-col">
         <Topbar user={{ name: user?.name || "User" }} />
         <main className="p-8 pt-28">

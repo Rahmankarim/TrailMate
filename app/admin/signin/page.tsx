@@ -43,7 +43,7 @@ export default function AdminSignIn() {
       }
 
       localStorage.setItem("token", data.token)
-      router.push("/admin/dashboard")
+      router.push("/dashboard/admin")
     } catch (error) {
       setErrors({ form: "Network error occurred" })
       setLoading(false)

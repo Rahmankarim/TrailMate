@@ -1,5 +1,4 @@
 "use client";
-// import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -34,7 +33,7 @@ export default function GuideDashboard() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800 pt-20">
   {/* <Sidebar role="guide" active="Profile" /> */}
       <div className="flex-1 flex flex-col">
         <Topbar user={{ name: guide?.name || "Guide" }} />

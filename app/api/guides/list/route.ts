@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import clientPromise from "@/lib/mongodb"
 import { getAuthUser } from "@/lib/auth"
+import { ObjectId } from "mongodb"
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,13 +17,36 @@ export async function GET(request: NextRequest) {
     const db = client.db()
 
     // Check if user is authenticated for filtering
-    const user = getAuthUser(request)
+    const user = await getAuthUser(request)
+    console.log("[Guides API] User:", user)
 
     // Build filter query
     const filter: any = { isActive: true }
 
-    if (user && user.role === "company") {
-      filter.postedBy = user.userId
+    if (user && user.role === "admin") {
+      // Admins see ALL guides
+      console.log("[Guides API] Admin user - showing all guides")
+    } else if (user && user.role === "company") {
+      // Companies see their own guides
+      console.log("[Guides API] Company user - filtering by userId:", user.userId)
+      const userObjectId = ObjectId.isValid(user.userId) ? new ObjectId(user.userId) : user.userId
+      filter.$or = [
+        { postedBy: user.userId },
+        { postedBy: userObjectId }
+      ]
+    } else {
+      // Normal users see only admin-created guides
+      console.log("[Guides API] Regular/Guest user - showing only admin guides")
+      const adminUsers = await db.collection("users").find({ role: "admin" }).toArray()
+      console.log("[Guides API] Found", adminUsers.length, "admin users")
+      
+      const adminIds = adminUsers.map(admin => admin._id)
+      const adminIdsStrings = adminUsers.map(admin => admin._id.toString())
+      
+      filter.$or = [
+        { postedBy: { $in: adminIds } },
+        { postedBy: { $in: adminIdsStrings } }
+      ]
     }
 
     if (location) {

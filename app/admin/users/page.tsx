@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
                 <p className="text-slate-600 text-sm">Manage platform users and permissions</p>
               </div>
             </div>
-            <Button variant="outline" onClick={() => (window.location.href = "/admin/dashboard")}>
+            <Button variant="outline" onClick={() => (window.location.href = "/dashboard/admin")}>
               Back to Dashboard
             </Button>
           </div>
@@ -162,7 +162,7 @@ export default function AdminUsersPage() {
                 )}
 
                 <div className="text-xs text-slate-500 mb-4">
-                  Joined: {new Date(user._id.getTimestamp()).toLocaleDateString()}
+                  Joined: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </div>
 
                 <div className="flex gap-2">

@@ -247,11 +247,17 @@ export default function DestinationsPage() {
       try {
         setLoading(true)
         setError(null)
-// ...existing code...
+
+        // Get token from localStorage for authenticated requests
+        const token = localStorage.getItem("token")
+        const headers: HeadersInit = {}
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`
+        }
 
         const [destinationsRes, hikesRes] = await Promise.all([
-          fetch("/api/destination/list", { cache: "no-store" }),
-          fetch("/api/guides/hikes", { cache: "no-store" }),
+          fetch("/api/destination/list", { cache: "no-store", headers }),
+          fetch("/api/guides/hikes", { cache: "no-store", headers }),
         ])
 
         let destinationsList = []
@@ -260,42 +266,27 @@ export default function DestinationsPage() {
         if (destinationsRes.ok) {
           const destinationsData = await destinationsRes.json()
           destinationsList = destinationsData.destinations || []
+          console.log('[Destinations Page] Loaded destinations from API:', destinationsList.length)
+        } else {
+          console.log('[Destinations Page] Failed to load destinations:', destinationsRes.status)
         }
 
         if (hikesRes.ok) {
           const hikesData = await hikesRes.json()
           hikesList = hikesData.hikes || []
+          console.log('[Destinations Page] Loaded hikes from API:', hikesList.length)
+        } else {
+          console.log('[Destinations Page] Failed to load hikes:', hikesRes.status)
         }
 
         let combinedList = [...destinationsList, ...hikesList]
-
-        // Use professional hiking data if both APIs return empty
-        if (combinedList.length === 0) {
-          combinedList = professionalHikingDestinations
-        }
+        console.log('[Destinations Page] Total combined items:', combinedList.length)
 
         setDestinations(combinedList)
         setFiltered(combinedList)
-// ...existing code...
-        const res = await fetch("/api/destination/list", { cache: "no-store" })
-        if (!res.ok) throw new Error("Failed to fetch destinations")
-        const data = await res.json()
-        let list = data.destinations || []
-        if (!Array.isArray(list)) list = []
-
-        // Use professional hiking data if API returns empty
-        if (list.length === 0) {
-          list = professionalHikingDestinations
-        }
-
-        setDestinations(list)
-        setFiltered(list)
-// ...existing code...
       } catch (e: any) {
         setError(e.message)
-        // Fallback to professional data on error
-        setDestinations(professionalHikingDestinations)
-        setFiltered(professionalHikingDestinations)
+        console.error('[Destinations Page] Error loading data:', e)
       } finally {
         setLoading(false)
       }

@@ -163,13 +163,21 @@ export default function GuidesPage() {
     async function loadGuides() {
       try {
         setLoading(true)
+        
+        // Get token from localStorage for authenticated requests
+        const token = localStorage.getItem("token")
+        const headers: HeadersInit = {}
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`
+        }
+        
         const params = new URLSearchParams()
         if (location !== "all") params.set("location", location)
         if (specialty !== "all") params.set("specialty", specialty)
         if (minRating !== "all") params.set("minRating", minRating)
         if (maxRate !== "all") params.set("maxRate", maxRate)
 
-        const res = await fetch(`/api/guides/list?${params.toString()}`)
+        const res = await fetch(`/api/guides/list?${params.toString()}`, { headers })
         if (!res.ok) throw new Error("Failed to fetch guides")
 
         const data = await res.json()
@@ -228,7 +236,7 @@ export default function GuidesPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[70vh] flex flex-col justify-center items-center overflow-hidden">
         <img
-          src="/images/guides-hero.jpg"
+          src="/images/attabad.jpg"
           alt="Professional Mountain Guides"
           className="absolute inset-0 w-full h-full object-cover object-center"
           style={{ filter: "brightness(0.5)" }}

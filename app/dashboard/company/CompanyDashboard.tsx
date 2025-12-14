@@ -13,38 +13,91 @@ export default function CompanyDashboard() {
   useEffect(() => {
     async function fetchCompanyData() {
       const token = localStorage.getItem("token")
-      // Fetch company info (replace with your actual endpoint if needed)
-      // For now, just set a placeholder name
-      setCompany({ name: "Eco Company" })
-
-      // Fetch destinations
-      const resDest = await fetch("/api/destination/list", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const dataDest = await resDest.json()
-      setDestinations(dataDest.destinations || [])
-
-      // Fetch bookings for company
-      const resBookings = await fetch("/api/booking/company", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const dataBookings = await resBookings.json()
-      setBookings(dataBookings.bookings || [])
+      
+      if (!token) {
+        console.error("No token found")
+        return
+      }
 
       try {
-        const resGuides = await fetch("/api/guides/list", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const dataGuides = await resGuides.json()
-        setGuides(dataGuides.guides || [])
+        // Decode token to get user info
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]))
+        const userId = tokenPayload.userId
+        
+        // Fetch company user info
+        try {
+          const resUser = await fetch(`/api/admin/users`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (resUser.ok) {
+            const dataUser = await resUser.json()
+            const currentUser = dataUser.users?.find((u: any) => u._id === userId || u._id.toString() === userId)
+            if (currentUser) {
+              setCompany({ name: currentUser.name || "Company" })
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user info:", error)
+        }
 
-        const resHikes = await fetch("/api/guides/hikes", {
+        // Fetch ALL destinations from database
+        const resDest = await fetch("/api/destination/list", {
           headers: { Authorization: `Bearer ${token}` },
         })
-        const dataHikes = await resHikes.json()
-        setHikes(dataHikes.hikes || [])
+        if (resDest.ok) {
+          const dataDest = await resDest.json()
+          // Filter destinations posted by this company
+          const companyDestinations = (dataDest.destinations || []).filter(
+            (d: any) => d.postedBy === userId || d.postedBy?.toString() === userId
+          )
+          setDestinations(companyDestinations)
+        }
+
+        // Fetch bookings for company
+        try {
+          const resBookings = await fetch("/api/admin/bookings", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (resBookings.ok) {
+            const dataBookings = await resBookings.json()
+            // Get all bookings (could filter by company destinations if needed)
+            setBookings(dataBookings.bookings || [])
+          }
+        } catch (error) {
+          console.error("Error fetching bookings:", error)
+        }
+
+        // Fetch guides
+        try {
+          const resGuides = await fetch("/api/admin/guides", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (resGuides.ok) {
+            const dataGuides = await resGuides.json()
+            // Filter guides posted by this company
+            const companyGuides = (dataGuides.guides || []).filter(
+              (g: any) => g.postedBy === userId || g.postedBy?.toString() === userId
+            )
+            setGuides(companyGuides)
+          }
+        } catch (error) {
+          console.error("Error fetching guides:", error)
+        }
+
+        // Fetch hikes
+        try {
+          const resHikes = await fetch("/api/guides/hikes", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (resHikes.ok) {
+            const dataHikes = await resHikes.json()
+            setHikes(dataHikes.hikes || [])
+          }
+        } catch (error) {
+          console.error("Error fetching hikes:", error)
+        }
       } catch (error) {
-        console.error("Error fetching guides/hikes:", error)
+        console.error("Error in fetchCompanyData:", error)
       }
     }
     fetchCompanyData()
@@ -61,7 +114,7 @@ export default function CompanyDashboard() {
   const recentHikes = hikes.slice(0, 5)
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 pt-20">
       {/* <Sidebar role="company" active="Dashboard" /> */}
       <div className="flex-1 flex flex-col">
         <Topbar user={{ name: company?.name || "Company" }} />
@@ -159,9 +212,11 @@ export default function CompanyDashboard() {
                     <li key={idx} className="border-b pb-2">
                       <div className="font-semibold">{d.name}</div>
                       <div className="text-sm text-gray-600">
-                        {d.date} {d.time}
+                        {d.location || 'N/A'} &middot; ${d.price || 0}
                       </div>
-                      <div className="text-xs text-gray-400">{d.companyName}</div>
+                      <div className="text-xs text-gray-400">
+                        {d.availableSeats || 0} seats available
+                      </div>
                     </li>
                   ))}
                 </ul>

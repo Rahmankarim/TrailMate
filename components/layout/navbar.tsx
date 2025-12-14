@@ -186,15 +186,6 @@ export default function Navbar() {
             >
               Super Admin
             </Button>
-            <Button
-              className="bg-gray-900 hover:bg-gray-800 text-white"
-              onClick={() => {
-                router.push("/signin")
-                setShowMobileMenu(false)
-              }}
-            >
-              Get Started
-            </Button>
           </div>
         ) : (
           <div className="flex flex-col space-y-3 pt-4 border-t">
@@ -308,9 +299,6 @@ export default function Navbar() {
                     onClick={() => router.push("/admin/signin")}
                   >
                     Super Admin
-                  </Button>
-                  <Button className="bg-gray-900 hover:bg-gray-800 text-white hover:scale-105 transition-all duration-300">
-                    Get Started
                   </Button>
                 </>
               ) : (
