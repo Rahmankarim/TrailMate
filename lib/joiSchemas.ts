@@ -1,4 +1,4 @@
-import Joi from "joi"
+import Joi from "joi";
 
 export const userSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
@@ -14,7 +14,7 @@ export const userSchema = Joi.object({
   role: Joi.string().valid("user", "company").required(),
   companyName: Joi.string().allow("").optional(),
   googleId: Joi.string().optional(),
-})
+});
 
 export const destinationSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
@@ -40,20 +40,41 @@ export const destinationSchema = Joi.object({
   included: Joi.array().items(Joi.string()).optional(),
   notIncluded: Joi.array().items(Joi.string()).optional(),
   packingList: Joi.array().items(Joi.string()).optional(),
-    createdAt: Joi.date().optional(),
-    updatedAt: Joi.date().optional(),
-})
+  createdAt: Joi.date().optional(),
+  updatedAt: Joi.date().optional(),
+});
 
 export const guideSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   bio: Joi.string().min(10).max(1000).required(),
   experience: Joi.number().min(0).max(100).required(),
-  specialties: Joi.array().items(Joi.string().min(2).max(100)).optional(),
-  languages: Joi.array().items(Joi.string().min(2).max(50)).required(),
+
+  specialties: Joi.array()
+    .items(Joi.string().min(2).max(100))
+    .optional(),
+
+  languages: Joi.array()
+    .items(Joi.string().min(2).max(50))
+    .required(),
+
   location: Joi.string().min(2).max(100).required(),
   dailyRate: Joi.number().min(0).required(),
+
   profileImage: Joi.string().uri().allow("").optional(),
-})
+
+  contactInfo: Joi.object({
+    phone: Joi.string().min(7).max(20).required(),
+    email: Joi.string().email().required(),
+  }).optional(),
+
+  places: Joi.array()
+    .items(Joi.string().min(2).max(100))
+    .optional(),
+
+  availableDates: Joi.array()
+    .items(Joi.string())
+    .optional(),
+});
 
 export const bookingSchema = Joi.object({
   destinationId: Joi.string().required(),
@@ -62,4 +83,4 @@ export const bookingSchema = Joi.object({
   email: Joi.string().email().required(),
   seats: Joi.number().min(1).required(),
   details: Joi.string().max(500).optional(),
-})
+});
