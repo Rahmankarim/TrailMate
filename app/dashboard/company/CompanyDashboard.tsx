@@ -55,12 +55,12 @@ export default function CompanyDashboard() {
 
         // Fetch bookings for company
         try {
-          const resBookings = await fetch("/api/admin/bookings", {
+          const resBookings = await fetch("/api/booking/company", {
             headers: { Authorization: `Bearer ${token}` },
           })
           if (resBookings.ok) {
             const dataBookings = await resBookings.json()
-            // Get all bookings (could filter by company destinations if needed)
+            // These bookings are already filtered by company destinations
             setBookings(dataBookings.bookings || [])
           }
         } catch (error) {
@@ -69,7 +69,7 @@ export default function CompanyDashboard() {
 
         // Fetch guides
         try {
-          const resGuides = await fetch("/api/admin/guides", {
+          const resGuides = await fetch("/api/guides/list", {
             headers: { Authorization: `Bearer ${token}` },
           })
           if (resGuides.ok) {
@@ -106,7 +106,7 @@ export default function CompanyDashboard() {
   // Example stats (replace with real API calls as needed)
   const totalDestinations = destinations.length
   const totalBookings = bookings.length
-  const totalRevenue = bookings.reduce((sum, b) => sum + (b.price || 0), 0)
+  const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0)
   const totalGuides = guides.length
   const totalHikes = hikes.length
   const recentBookings = bookings.slice(0, 5)
@@ -114,11 +114,11 @@ export default function CompanyDashboard() {
   const recentHikes = hikes.slice(0, 5)
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 pt-20">
+    <div className="flex min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       {/* <Sidebar role="company" active="Dashboard" /> */}
       <div className="flex-1 flex flex-col">
         <Topbar user={{ name: company?.name || "Company" }} />
-        <main className="p-8 pt-28">
+        <main className="p-8 pt-24">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">Welcome, {company?.name || "Company"}</h1>
@@ -126,7 +126,7 @@ export default function CompanyDashboard() {
                 Manage your business and adventures from here.
               </div>
             </div>
-            <div className="flex gap-4 mt-4 md:mt-0">
+            <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
               <a
                 href="/dashboard/company/profile"
                 className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700"
@@ -144,6 +144,12 @@ export default function CompanyDashboard() {
                 className="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700"
               >
                 Guides
+              </a>
+              <a
+                href="/dashboard/company/messages"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700"
+              >
+                Messages
               </a>
               <a
                 href="/dashboard/company/bookings"

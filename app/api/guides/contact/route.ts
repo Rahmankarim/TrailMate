@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { MongoClient, ObjectId } from "mongodb"
-
-const uri = process.env.MONGODB_URI || ""
+import { ObjectId } from "mongodb"
+import clientPromise from "@/lib/mongodb"
+import { verifyJwt } from "@/lib/jwt"
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,9 +13,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const client = new MongoClient(uri)
-    await client.connect()
-    const db = client.db("trailmate")
+    const client = await clientPromise
+    const dbName = process.env.MONGODB_URI?.split('/')[3]?.split('?')[0] || "TrailMate"
+    const db = client.db(dbName)
 
     const contact = {
       guideId: new ObjectId(guideId),
@@ -35,8 +35,6 @@ export async function POST(request: NextRequest) {
     // Update guide's last active date
     await db.collection("guides").updateOne({ _id: new ObjectId(guideId) }, { $set: { lastActive: new Date() } })
 
-    await client.close()
-
     return NextResponse.json({
       message: "Contact request sent successfully",
       contactId: result.insertedId,
@@ -53,22 +51,87 @@ export async function GET(request: NextRequest) {
     const guideId = searchParams.get("guideId")
     const status = searchParams.get("status")
 
-    if (!guideId) {
-      return NextResponse.json({ error: "Guide ID is required" }, { status: 400 })
+    const token = request.headers.get("authorization")?.replace("Bearer ", "")
+    
+    const client = await clientPromise
+    const dbName = process.env.MONGODB_URI?.split('/')[3]?.split('?')[0] || "TrailMate"
+    const db = client.db(dbName)
+
+    let filter: any = {}
+
+    // If guideId is provided, filter by that guide
+    if (guideId) {
+      filter.guideId = new ObjectId(guideId)
+    } else if (token) {
+      // If no guideId but token is provided, get contacts for company's guides
+      try {
+        const user = await verifyJwt(token)
+        if (user && user.userId) {
+          const userId = user.userId
+          
+          // Find all guides posted by this company
+          const guides = await db
+            .collection("guides")
+            .find({
+              $or: [
+                { postedBy: userId },
+                { postedBy: new ObjectId(userId) }
+              ]
+            })
+            .toArray()
+
+          const guideIds = guides.map(g => g._id)
+          
+          if (guideIds.length > 0) {
+            filter.guideId = { $in: guideIds }
+          }
+        }
+      } catch (authError) {
+        console.error("Auth error:", authError)
+      }
     }
 
-    const client = new MongoClient(uri)
-    await client.connect()
-    const db = client.db("trailmate")
-
-    const filter: any = { guideId: new ObjectId(guideId) }
     if (status) {
       filter.status = status
     }
 
-    const contacts = await db.collection("guide_contacts").find(filter).sort({ createdAt: -1 }).toArray()
-
-    await client.close()
+    const contacts = await db
+      .collection("guide_contacts")
+      .aggregate([
+        { $match: filter },
+        {
+          $lookup: {
+            from: "guides",
+            localField: "guideId",
+            foreignField: "_id",
+            as: "guide"
+          }
+        },
+        {
+          $unwind: {
+            path: "$guide",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            guideId: 1,
+            guideName: "$guide.name",
+            clientName: 1,
+            clientEmail: 1,
+            clientPhone: 1,
+            message: 1,
+            preferredDate: 1,
+            groupSize: 1,
+            hikeInterest: 1,
+            status: 1,
+            createdAt: 1
+          }
+        },
+        { $sort: { createdAt: -1 } }
+      ])
+      .toArray()
 
     return NextResponse.json({ contacts })
   } catch (error) {

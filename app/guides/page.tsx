@@ -212,7 +212,7 @@ export default function GuidesPage() {
           guide.name.toLowerCase().includes(search.toLowerCase()) ||
           guide.bio.toLowerCase().includes(search.toLowerCase()) ||
           guide.location.toLowerCase().includes(search.toLowerCase()) ||
-          guide.specialties.some((s) => s.toLowerCase().includes(search.toLowerCase())),
+          (guide.specialties && guide.specialties.some((s) => s.toLowerCase().includes(search.toLowerCase()))),
       )
     }
 
@@ -431,12 +431,12 @@ export default function GuidesPage() {
 
                     <div className="mb-4">
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {guide.specialties.slice(0, 3).map((specialty, index) => (
+                        {guide.specialties && guide.specialties.slice(0, 3).map((specialty, index) => (
                           <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
                             {specialty}
                           </Badge>
                         ))}
-                        {guide.specialties.length > 3 && (
+                        {guide.specialties && guide.specialties.length > 3 && (
                           <Badge variant="secondary" className="bg-gray-50 text-gray-600">
                             +{guide.specialties.length - 3} more
                           </Badge>
@@ -446,12 +446,14 @@ export default function GuidesPage() {
                       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                         <span className="flex items-center gap-1">
                           <Languages className="w-4 h-4" />
-                          {guide.languages.length} languages
+                          {guide.languages?.length || 0} languages
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Award className="w-4 h-4" />
-                          {guide.certifications.length} certs
-                        </span>
+                        {guide.certifications && guide.certifications.length > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Award className="w-4 h-4" />
+                            {guide.certifications.length} certs
+                          </span>
+                        )}
                       </div>
                     </div>
 

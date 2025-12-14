@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { MongoClient, ObjectId } from "mongodb"
-
-const uri = process.env.MONGODB_URI || ""
+import { ObjectId } from "mongodb"
+import clientPromise from "@/lib/mongodb"
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,9 +9,9 @@ export async function GET(request: NextRequest) {
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
 
-    const client = new MongoClient(uri)
-    await client.connect()
-    const db = client.db("trailmate")
+    const client = await clientPromise
+    const dbName = process.env.MONGODB_URI?.split('/')[3]?.split('?')[0] || "TrailMate"
+    const db = client.db(dbName)
 
     const filter: any = { isApproved: true }
     if (guideId) {
@@ -28,8 +27,6 @@ export async function GET(request: NextRequest) {
       .toArray()
 
     const total = await db.collection("guide_stories").countDocuments(filter)
-
-    await client.close()
 
     return NextResponse.json({
       stories,
@@ -56,9 +53,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const client = new MongoClient(uri)
-    await client.connect()
-    const db = client.db("trailmate")
+    const client = await clientPromise
+    const dbName = process.env.MONGODB_URI?.split('/')[3]?.split('?')[0] || "TrailMate"
+    const db = client.db(dbName)
 
     const story = {
       guideId: new ObjectId(guideId),
@@ -77,8 +74,6 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await db.collection("guide_stories").insertOne(story)
-
-    await client.close()
 
     return NextResponse.json({
       message: "Story submitted successfully and is pending approval",

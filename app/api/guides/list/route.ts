@@ -34,6 +34,16 @@ export async function GET(request: NextRequest) {
         { postedBy: user.userId },
         { postedBy: userObjectId }
       ]
+      
+      // Debug: Check all guides in database
+      const allGuides = await db.collection("guides").find({}).toArray()
+      console.log("[Guides API] Total guides in DB:", allGuides.length)
+      console.log("[Guides API] PostedBy values:", allGuides.map(g => ({ 
+        name: g.name, 
+        postedBy: g.postedBy, 
+        type: typeof g.postedBy,
+        isObjectId: g.postedBy instanceof ObjectId 
+      })))
     } else {
       // Normal users see only admin-created guides
       console.log("[Guides API] Regular/Guest user - showing only admin guides")
@@ -73,12 +83,12 @@ export async function GET(request: NextRequest) {
         {
           $lookup: {
             from: "users",
-            localField: "userId",
+            localField: "postedBy",
             foreignField: "_id",
             as: "user",
           },
         },
-        { $unwind: "$user" },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
         {
           $project: {
             _id: 1,
@@ -98,8 +108,11 @@ export async function GET(request: NextRequest) {
             dailyRate: 1,
             currency: 1,
             isVerified: 1,
+            isActive: 1,
+            postedBy: 1,
             joinedDate: 1,
-            "user.email": 1,
+            companyEmail: "$user.email",
+            companyName: "$user.name",
           },
         },
         { $sort: { rating: -1, reviewCount: -1 } },

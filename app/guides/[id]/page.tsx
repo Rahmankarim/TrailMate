@@ -603,11 +603,15 @@ export default function GuideProfilePage() {
                   <Card className="p-6">
                     <h3 className="text-xl font-bold mb-4">Specialties</h3>
                     <div className="flex flex-wrap gap-2">
-                      {guide.specialties.map((specialty, index) => (
-                        <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700">
-                          {specialty}
-                        </Badge>
-                      ))}
+                      {guide.specialties && guide.specialties.length > 0 ? (
+                        guide.specialties.map((specialty, index) => (
+                          <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700">
+                            {specialty}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">No specialties listed</p>
+                      )}
                     </div>
                   </Card>
                 </div>
@@ -641,24 +645,32 @@ export default function GuideProfilePage() {
                   <Card className="p-6">
                     <h3 className="text-xl font-bold mb-4">Languages</h3>
                     <div className="flex flex-wrap gap-2">
-                      {guide.languages.map((language, index) => (
-                        <Badge key={index} variant="outline">
-                          <Languages className="w-3 h-3 mr-1" />
-                          {language}
-                        </Badge>
-                      ))}
+                      {guide.languages && guide.languages.length > 0 ? (
+                        guide.languages.map((language, index) => (
+                          <Badge key={index} variant="outline">
+                            <Languages className="w-3 h-3 mr-1" />
+                            {language}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">No languages listed</p>
+                      )}
                     </div>
                   </Card>
 
                   <Card className="p-6">
                     <h3 className="text-xl font-bold mb-4">Certifications</h3>
                     <div className="space-y-2">
-                      {guide.certifications.map((cert, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm">{cert}</span>
-                        </div>
-                      ))}
+                      {guide.certifications && guide.certifications.length > 0 ? (
+                        guide.certifications.map((cert, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span className="text-sm">{cert}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">No certifications listed</p>
+                      )}
                     </div>
                   </Card>
                 </div>
@@ -720,7 +732,7 @@ export default function GuideProfilePage() {
                   <Card key={hike._id} className="overflow-hidden">
                     <div className="relative h-48">
                       <img
-                        src={hike.images[0] || "/placeholder.svg?height=200&width=400&query=mountain hiking trail"}
+                        src={hike.images?.[0] || "/placeholder.svg?height=200&width=400&query=mountain hiking trail"}
                         alt={hike.name}
                         className="w-full h-full object-cover"
                       />
@@ -768,7 +780,7 @@ export default function GuideProfilePage() {
                   <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
 
                   <div className="space-y-4">
-                    {guide.contactInfo.email && (
+                    {guide.contactInfo?.email && (
                       <div className="flex items-center gap-3">
                         <Mail className="w-5 h-5 text-gray-400" />
                         <div>
@@ -778,7 +790,7 @@ export default function GuideProfilePage() {
                       </div>
                     )}
 
-                    {guide.contactInfo.phone && (
+                    {guide.contactInfo?.phone && (
                       <div className="flex items-center gap-3">
                         <Phone className="w-5 h-5 text-gray-400" />
                         <div>
@@ -788,7 +800,7 @@ export default function GuideProfilePage() {
                       </div>
                     )}
 
-                    {guide.contactInfo.whatsapp && (
+                    {guide.contactInfo?.whatsapp && (
                       <div className="flex items-center gap-3">
                         <MessageSquare className="w-5 h-5 text-gray-400" />
                         <div>
@@ -798,7 +810,7 @@ export default function GuideProfilePage() {
                       </div>
                     )}
 
-                    {guide.contactInfo.website && (
+                    {guide.contactInfo?.website && (
                       <div className="flex items-center gap-3">
                         <Globe className="w-5 h-5 text-gray-400" />
                         <div>
