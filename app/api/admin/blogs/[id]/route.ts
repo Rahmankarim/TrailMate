@@ -6,7 +6,7 @@ import type { Blog } from "@/models/Blog"
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
     // Verify admin access
-    requireRole(req, ["admin"])
+    await requireRole(req, ["admin"])
 
     const client = await clientPromise
     const db = client.db()
@@ -36,7 +36,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     // Verify admin access
-    requireRole(req, ["admin"])
+    await requireRole(req, ["admin"])
 
     const body = await req.json()
     const client = await clientPromise

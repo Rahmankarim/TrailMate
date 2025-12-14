@@ -19,6 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const valid = await comparePassword(password, user.password);
   if (!valid) return res.status(401).json({ error: "Invalid email or password" });
 
-  const token = signJwt({ userId: user._id, role: user.role });
+  const token = await signJwt({ userId: user._id, role: user.role });
   res.status(200).json({ token, user: { name: user.name, email: user.email, role: user.role, companyName: user.companyName } });
 }

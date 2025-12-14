@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     const { signJwt } = require("@/lib/jwt")
-    const token = signJwt({
+    const token = await signJwt({
       userId: "super-admin-001",
       role: "admin",
       email: SUPER_ADMIN_EMAIL,

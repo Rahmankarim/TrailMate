@@ -2,8 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { DM_Sans } from "next/font/google"
 import "./globals.css"
-import Navbar from "@/components/layout/navbar"
-import Footer from "@/components/layout/footer"
+import ConditionalLayout from "@/components/layout/ConditionalLayout"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -24,20 +23,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <head>
-  <style>{`
-html {
-  font-family: ${dmSans.style.fontFamily.replace(/['"]/g, "")};
-  --font-sans: ${dmSans.variable};
-  --font-serif: ${dmSans.variable};
-}
-  `}</style>
-      </head>
-  <body className="antialiased" suppressHydrationWarning>
-        <Navbar />
-        {children}
-        <Footer />
+    <html lang="en" className={dmSans.variable}>
+      <body className="antialiased" suppressHydrationWarning>
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   )

@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth"
 export async function GET(req: Request) {
   try {
     // Verify admin access
-    requireRole(req, ["admin"])
+    await requireRole(req, ["admin"])
 
     const client = await clientPromise
     const db = client.db()

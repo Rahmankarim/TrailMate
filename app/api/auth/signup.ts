@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const result = await users.insertOne(user);
     // Return JWT token and user info for immediate login
     const { signJwt } = require("@/lib/jwt");
-    const token = signJwt({ userId: result.insertedId, role: user.role });
+    const token = await signJwt({ userId: result.insertedId, role: user.role });
     return new Response(JSON.stringify({
       token,
       user: {

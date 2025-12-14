@@ -19,7 +19,13 @@ export async function POST(req: Request) {
     const valid = await comparePassword(password, user.password)
     if (!valid) return new Response(JSON.stringify({ error: "Invalid email or password" }), { status: 401 })
 
-  const token = await signJwt({ userId: user._id, role: user.role })
+    // Convert ObjectId to string for JWT payload
+    const token = await signJwt({ 
+      userId: user._id?.toString() || user._id, 
+      role: user.role,
+      email: user.email,
+      name: user.name
+    })
 
     const response = new Response(
       JSON.stringify({

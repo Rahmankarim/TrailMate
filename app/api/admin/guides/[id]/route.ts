@@ -6,7 +6,7 @@ import { getAuthUser } from "@/lib/auth"
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Verify admin authentication
-    const user = getAuthUser(request)
+    const user = await getAuthUser(request)
     if (!user || user.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

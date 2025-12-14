@@ -1,4 +1,4 @@
-import Joi from "joi"
+import Joi from "joi";
 
 export const userSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
@@ -14,7 +14,7 @@ export const userSchema = Joi.object({
   role: Joi.string().valid("user", "company").required(),
   companyName: Joi.string().allow("").optional(),
   googleId: Joi.string().optional(),
-})
+});
 
 export const destinationSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
@@ -40,9 +40,9 @@ export const destinationSchema = Joi.object({
   included: Joi.array().items(Joi.string()).optional(),
   notIncluded: Joi.array().items(Joi.string()).optional(),
   packingList: Joi.array().items(Joi.string()).optional(),
-    createdAt: Joi.date().optional(),
-    updatedAt: Joi.date().optional(),
-})
+  createdAt: Joi.date().optional(),
+  updatedAt: Joi.date().optional(),
+});
 
 export const guideSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
@@ -58,7 +58,7 @@ export const guideSchema = Joi.object({
   }).required(),
   places: Joi.array().items(Joi.string().min(2).max(100)).optional(),
   availableDates: Joi.array().items(Joi.string()).optional(),
-})
+});
 
 export const bookingSchema = Joi.object({
   destinationId: Joi.string().required(),
@@ -67,4 +67,4 @@ export const bookingSchema = Joi.object({
   email: Joi.string().email().required(),
   seats: Joi.number().min(1).required(),
   details: Joi.string().max(500).optional(),
-})
+});

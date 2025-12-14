@@ -48,6 +48,52 @@ interface Hike {
 }
 
 export default function CompanyGuides() {
+  async function handleAddHike(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/guides/hikes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...hikeForm,
+          guideId: selectedGuide,
+          distance: Number.parseFloat(hikeForm.distance),
+          elevation: Number.parseFloat(hikeForm.elevation),
+          maxGroupSize: Number.parseInt(hikeForm.maxGroupSize),
+          price: Number.parseFloat(hikeForm.price),
+          includedServices: hikeForm.includedServices.split(",").map((s) => s.trim()),
+          requirements: hikeForm.requirements.split(",").map((r) => r.trim()),
+        }),
+      });
+      if (res.ok) {
+        setShowAddHikeDialog(false);
+        setHikeForm({
+          name: "",
+          description: "",
+          location: "",
+          difficulty: "Easy",
+          duration: "",
+          distance: "",
+          elevation: "",
+          maxGroupSize: "",
+          price: "",
+          bestSeason: "",
+          includedServices: "",
+          requirements: "",
+        });
+        fetchData();
+      } else {
+        alert("Failed to add hike");
+      }
+    } catch (error) {
+      console.error("Error adding hike:", error);
+      alert("Failed to add hike");
+    }
+  }
   const [guides, setGuides] = useState<Guide[]>([])
   const [hikes, setHikes] = useState<Hike[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,15 +103,16 @@ export default function CompanyGuides() {
   const [selectedGuide, setSelectedGuide] = useState<string>("")
 
   const [guideForm, setGuideForm] = useState({
-    name: "",
-    bio: "",
-    experience: "",
-    specialties: "",
-    languages: "",
-    location: "",
-    dailyRate: "",
-    contactPhone: "",
-    contactEmail: "",
+  name: "",
+  bio: "",
+  experience: "",
+  specialties: "",
+  languages: "",
+  location: "",
+  dailyRate: "",
+  contactPhone: "",
+  contactEmail: "",
+  image: "",
   })
 
   const [hikeForm, setHikeForm] = useState({
@@ -116,26 +163,27 @@ export default function CompanyGuides() {
     e.preventDefault()
     try {
       const token = localStorage.getItem("token")
-      const res = await fetch("/api/guides", {
+      const response = await fetch("/api/guides", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...guideForm,
-          experience: Number.parseInt(guideForm.experience),
-          dailyRate: Number.parseFloat(guideForm.dailyRate),
-          specialties: guideForm.specialties.split(",").map((s) => s.trim()),
-          languages: guideForm.languages.split(",").map((l) => l.trim()),
-          contactInfo: {
-            phone: guideForm.contactPhone,
-            email: guideForm.contactEmail,
-          },
+          name: guideForm.name,
+          bio: guideForm.bio,
+          experience: guideForm.experience,
+          languages: guideForm.languages,
+          location: guideForm.location,
+          phone: guideForm.contactPhone,
+          email: guideForm.contactEmail,
+          places: ["Kathmandu", "Pokhara"],
+          availableDates: ["2025-09-01", "2025-09-15"],
+          image: guideForm.image,
         }),
-      })
+      });
 
-      if (res.ok) {
+      if (response.ok) {
         alert("Guide added successfully!")
         setShowAddGuideDialog(false)
         setGuideForm({
@@ -148,41 +196,8 @@ export default function CompanyGuides() {
           dailyRate: "",
           contactPhone: "",
           contactEmail: "",
+          image: "",
         })
-        fetchData()
-      } else {
-        alert("Failed to add guide")
-      }
-    } catch (error) {
-      console.error("Error adding guide:", error)
-      alert("Failed to add guide")
-    }
-  }
-
-  async function handleAddHike(e: React.FormEvent) {
-    e.preventDefault()
-    try {
-      const token = localStorage.getItem("token")
-      const res = await fetch("/api/guides/hikes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...hikeForm,
-          guideId: selectedGuide,
-          distance: Number.parseFloat(hikeForm.distance),
-          elevation: Number.parseFloat(hikeForm.elevation),
-          maxGroupSize: Number.parseInt(hikeForm.maxGroupSize),
-          price: Number.parseFloat(hikeForm.price),
-          includedServices: hikeForm.includedServices.split(",").map((s) => s.trim()),
-          requirements: hikeForm.requirements.split(",").map((r) => r.trim()),
-        }),
-      })
-
-      if (res.ok) {
-        alert("Hike added successfully!")
         setShowAddHikeDialog(false)
         setHikeForm({
           name: "",
@@ -264,7 +279,7 @@ export default function CompanyGuides() {
   return (
     <main className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 mt-25">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Guides & Hikes Management</h1>
             <p className="text-gray-600">Manage your professional guides and hiking experiences</p>

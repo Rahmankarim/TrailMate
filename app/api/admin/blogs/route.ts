@@ -5,7 +5,7 @@ import type { Blog } from "@/models/Blog"
 export async function GET(req: Request) {
   try {
     // Verify admin access
-    requireRole(req, ["admin"])
+    await requireRole(req, ["admin"])
 
     const client = await clientPromise
     const db = client.db()
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     // Verify admin access
-    const user = requireRole(req, ["admin"])
+    const user = await requireRole(req, ["admin"])
 
     const body = await req.json()
     const { title, slug, excerpt, content, category, tags, image, featured, published, readTime } = body

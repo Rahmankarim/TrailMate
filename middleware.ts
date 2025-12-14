@@ -8,9 +8,19 @@ export async function middleware(request: NextRequest) {
 
     console.log('--- Middleware Debug ---')
     console.log('Requested Path:', request.nextUrl.pathname)
+  
+  // Public routes that should not be protected
+  const publicRoutes = ["/signin", "/signup", "/admin/signin"]
+  
+  // Check if current path is public
+  if (publicRoutes.some((route) => pathname === route)) {
+    console.log('Public route, allowing access')
+    return NextResponse.next()
+  }
+  
   // Protected routes that require authentication
   const protectedRoutes = ["/dashboard"]
-  const adminRoutes = ["/admin"]
+  const adminRoutes = ["/admin", "/dashboard/admin"]
 
   // Check if the current path is protected
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))

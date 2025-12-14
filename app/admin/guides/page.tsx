@@ -1,10 +1,15 @@
 "use client"
+
 import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Users, Shield, CheckCircle, XCircle, Search, Filter, Eye, Star, MapPin, Award, Mountain } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Users, Shield, CheckCircle, XCircle, Search, Filter, Eye, Star, MapPin, Award, Mountain, Plus, ArrowLeft, UserCheck, UserX } from "lucide-react"
 
 interface Guide {
   _id: string
@@ -28,10 +33,24 @@ interface Guide {
 }
 
 export default function AdminGuidesPage() {
+  const router = useRouter()
   const [guides, setGuides] = useState<Guide[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all") // all, verified, unverified, active, inactive
+  const [filterStatus, setFilterStatus] = useState("all")
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    bio: "",
+    profileImage: "",
+    experience: "",
+    specialties: "",
+    languages: "",
+    location: "",
+    dailyRate: "",
+    isVerified: true,
+    isActive: true,
+  })
   const [stats, setStats] = useState({
     total: 0,
     verified: 0,
@@ -49,7 +68,6 @@ export default function AdminGuidesPage() {
       setLoading(true)
       const token = localStorage.getItem("token")
 
-      // Fetch all guides (admin can see all)
       const res = await fetch("/api/admin/guides", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -58,7 +76,6 @@ export default function AdminGuidesPage() {
         const data = await res.json()
         setGuides(data.guides || [])
 
-        // Calculate stats
         const total = data.guides.length
         const verified = data.guides.filter((g: Guide) => g.isVerified).length
         const active = data.guides.filter((g: Guide) => g.isActive).length
@@ -78,6 +95,52 @@ export default function AdminGuidesPage() {
     }
   }
 
+  async function handleCreateGuide(e: React.FormEvent) {
+    e.preventDefault()
+    const token = localStorage.getItem("token")
+
+    try {
+      const res = await fetch("/api/admin/guides", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          experience: parseInt(formData.experience),
+          dailyRate: parseFloat(formData.dailyRate),
+          specialties: formData.specialties.split(",").map((s) => s.trim()),
+          languages: formData.languages.split(",").map((l) => l.trim()),
+        }),
+      })
+
+      if (res.ok) {
+        alert("Guide created successfully!")
+        setShowAddForm(false)
+        setFormData({
+          name: "",
+          bio: "",
+          profileImage: "",
+          experience: "",
+          specialties: "",
+          languages: "",
+          location: "",
+          dailyRate: "",
+          isVerified: true,
+          isActive: true,
+        })
+        fetchGuides()
+      } else {
+        const data = await res.json()
+        alert(data.error || "Failed to create guide")
+      }
+    } catch (error) {
+      console.error("Error creating guide:", error)
+      alert("Error creating guide")
+    }
+  }
+
   async function updateGuideStatus(guideId: string, field: "isVerified" | "isActive", value: boolean) {
     try {
       const token = localStorage.getItem("token")
@@ -91,12 +154,9 @@ export default function AdminGuidesPage() {
       })
 
       if (res.ok) {
-        // Update local state
         setGuides(guides.map((guide) => (guide._id === guideId ? { ...guide, [field]: value } : guide)))
 
-        // Recalculate stats
         const updatedGuides = guides.map((guide) => (guide._id === guideId ? { ...guide, [field]: value } : guide))
-
         const total = updatedGuides.length
         const verified = updatedGuides.filter((g) => g.isVerified).length
         const active = updatedGuides.filter((g) => g.isActive).length
@@ -132,243 +192,359 @@ export default function AdminGuidesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-700 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading guides...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading guides...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-100 rounded-lg">
-                <Users className="h-6 w-6 text-slate-700" />
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Guide Management</h1>
+          <p className="text-muted-foreground mt-1">Manage trail guides and their profiles</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.push("/dashboard/admin")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Button>
+          <Button onClick={() => setShowAddForm(!showAddForm)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add New Guide
+          </Button>
+        </div>
+      </div>
+
+      {showAddForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Guide</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCreateGuide} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location *</Label>
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="experience">Experience (years) *</Label>
+                  <Input
+                    id="experience"
+                    type="number"
+                    value={formData.experience}
+                    onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dailyRate">Daily Rate ($) *</Label>
+                  <Input
+                    id="dailyRate"
+                    type="number"
+                    step="0.01"
+                    value={formData.dailyRate}
+                    onChange={(e) => setFormData({ ...formData, dailyRate: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profileImage">Profile Image URL</Label>
+                  <Input
+                    id="profileImage"
+                    value={formData.profileImage}
+                    onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="specialties">Specialties (comma-separated) *</Label>
+                  <Input
+                    id="specialties"
+                    value={formData.specialties}
+                    onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
+                    placeholder="Hiking, Camping, Rock Climbing"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="languages">Languages (comma-separated) *</Label>
+                  <Input
+                    id="languages"
+                    value={formData.languages}
+                    onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
+                    placeholder="English, Spanish, French"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="bio">Bio *</Label>
+                  <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    rows={3}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center space-x-4 md:col-span-2">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.isVerified}
+                      onChange={(e) => setFormData({ ...formData, isVerified: e.target.checked })}
+                    />
+                    <span>Verified</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    />
+                    <span>Active</span>
+                  </label>
+                </div>
               </div>
+
+              <div className="flex gap-2">
+                <Button type="submit">Create Guide</Button>
+                <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-slate-800">Guide Management</h1>
-                <p className="text-slate-600 text-sm">Manage and oversee all platform guides</p>
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={() => (window.location.href = "/admin/dashboard")}>
-                Back to Dashboard
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <Users className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-800">{stats.total}</div>
-              <div className="text-sm text-slate-600">Total Guides</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-800">{stats.verified}</div>
-              <div className="text-sm text-slate-600">Verified</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <XCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-800">{stats.unverified}</div>
-              <div className="text-sm text-slate-600">Unverified</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <Shield className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-800">{stats.active}</div>
-              <div className="text-sm text-slate-600">Active</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-4 text-center">
-              <XCircle className="h-8 w-8 text-gray-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-800">{stats.inactive}</div>
-              <div className="text-sm text-slate-600">Inactive</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search and Filter */}
-        <Card className="bg-white shadow-sm mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                <Input
-                  placeholder="Search guides by name, location, or specialty..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-slate-600" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 rounded-md text-sm"
-                >
-                  <option value="all">All Guides</option>
-                  <option value="verified">Verified Only</option>
-                  <option value="unverified">Unverified Only</option>
-                  <option value="active">Active Only</option>
-                  <option value="inactive">Inactive Only</option>
-                </select>
-              </div>
+              <Users className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Guides Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGuides.map((guide) => (
-            <Card key={guide._id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
-              <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600">
-                <img
-                  src={guide.profileImage || "/placeholder.svg?height=200&width=300&query=professional guide portrait"}
-                  alt={guide.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <div className="absolute top-4 right-4 flex flex-col gap-2">
-                  <Badge className={guide.isVerified ? "bg-green-500 text-white" : "bg-red-500 text-white"}>
-                    {guide.isVerified ? "Verified" : "Unverified"}
-                  </Badge>
-                  <Badge className={guide.isActive ? "bg-blue-500 text-white" : "bg-gray-500 text-white"}>
-                    {guide.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-white font-bold text-xl mb-1">{guide.name}</h3>
-                  <div className="flex items-center gap-2 text-white/90 text-sm">
-                    <MapPin className="w-3 h-3" />
-                    {guide.location}
-                  </div>
-                </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Verified</p>
+                <p className="text-2xl font-bold">{stats.verified}</p>
               </div>
+              <Shield className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-              <CardContent className="p-6">
-                <p className="text-slate-600 mb-4 line-clamp-2">{guide.bio}</p>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Unverified</p>
+                <p className="text-2xl font-bold">{stats.unverified}</p>
+              </div>
+              <XCircle className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-                <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 mb-4">
-                  <div className="flex items-center gap-1">
-                    <Award className="w-4 h-4" />
-                    {guide.experience} years
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Active</p>
+                <p className="text-2xl font-bold">{stats.active}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Inactive</p>
+                <p className="text-2xl font-bold">{stats.inactive}</p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex gap-4 mb-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search guides..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Guides</SelectItem>
+                <SelectItem value="verified">Verified</SelectItem>
+                <SelectItem value="unverified">Unverified</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {filteredGuides.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredGuides.map((guide) => (
+            <Card key={guide._id}>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                    {guide.profileImage ? (
+                      <img src={guide.profileImage} alt={guide.name} className="h-12 w-12 rounded-full object-cover" />
+                    ) : (
+                      <Users className="h-6 w-6" />
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Mountain className="w-4 h-4" />
-                    {guide.totalHikes} hikes
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    {guide.totalClients} clients
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    {guide.rating} ({guide.reviewCount})
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {guide.specialties.slice(0, 2).map((specialty, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {specialty}
-                    </Badge>
-                  ))}
-                  {guide.specialties.length > 2 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{guide.specialties.length - 2} more
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-lg font-bold text-slate-900">${guide.dailyRate}/day</span>
-                  <span className="text-sm text-slate-500">
-                    Joined {new Date(guide.joinedDate).toLocaleDateString()}
-                  </span>
-                </div>
-
-                {/* Admin Actions */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant={guide.isVerified ? "destructive" : "default"}
-                      className="flex-1"
-                      onClick={() => updateGuideStatus(guide._id, "isVerified", !guide.isVerified)}
-                    >
-                      {guide.isVerified ? (
-                        <>
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Unverify
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Verify
-                        </>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{guide.name}</h3>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {guide.location}
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      {guide.isVerified && (
+                        <Badge variant="outline" className="text-green-600">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
                       )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={guide.isActive ? "destructive" : "default"}
-                      className="flex-1"
-                      onClick={() => updateGuideStatus(guide._id, "isActive", !guide.isActive)}
-                    >
-                      {guide.isActive ? (
-                        <>
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Deactivate
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Activate
-                        </>
-                      )}
-                    </Button>
+                      <Badge variant={guide.isActive ? "default" : "secondary"}>
+                        {guide.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
                   </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{guide.bio}</p>
+
+                <div className="space-y-2 text-sm mb-4">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Experience:</span>
+                    <span className="font-medium">{guide.experience} years</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Daily Rate:</span>
+                    <span className="font-medium">${guide.dailyRate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Rating:</span>
+                    <span className="font-medium flex items-center gap-1">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      {(guide.rating || 0).toFixed(1)} ({guide.reviewCount || 0})
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs text-muted-foreground mb-2">Specialties:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(guide.specialties || []).slice(0, 3).map((specialty, i) => (
+                      <Badge key={i} variant="outline" className="text-xs">
+                        {specialty}
+                      </Badge>
+                    ))}
+                    {(guide.specialties || []).length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{(guide.specialties || []).length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
                   <Button
+                    variant={guide.isVerified ? "outline" : "default"}
                     size="sm"
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    onClick={() => (window.location.href = `/guides/${guide._id}`)}
+                    className="flex-1"
+                    onClick={() => updateGuideStatus(guide._id, "isVerified", !guide.isVerified)}
                   >
-                    <Eye className="w-3 h-3 mr-1" />
-                    View Full Profile
+                    {guide.isVerified ? (
+                      <>
+                        <UserX className="h-4 w-4 mr-1" />
+                        Unverify
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck className="h-4 w-4 mr-1" />
+                        Verify
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => updateGuideStatus(guide._id, "isActive", !guide.isActive)}
+                  >
+                    {guide.isActive ? "Deactivate" : "Activate"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => router.push(`/guides/${guide._id}`)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View Details
                   </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {filteredGuides.length === 0 && !loading && (
-          <div className="text-center py-16">
-            <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">No guides found</h3>
-            <p className="text-slate-600">Try adjusting your search or filter criteria</p>
-          </div>
-        )}
-      </main>
+      )}
     </div>
   )
 }

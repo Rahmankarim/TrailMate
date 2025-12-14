@@ -114,7 +114,7 @@ export default function AdminBlogsPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 Create Post
               </Button>
-              <Button variant="outline" onClick={() => (window.location.href = "/admin/dashboard")}>
+              <Button variant="outline" onClick={() => (window.location.href = "/dashboard/admin")}>
                 Back to Dashboard
               </Button>
             </div>
